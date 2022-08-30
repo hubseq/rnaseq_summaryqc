@@ -1,0 +1,3 @@
+[submodule "src/global_utils"]
+	path = src/global_utils
+	url = git@bitbucket.org:hubseq/global_utils.git

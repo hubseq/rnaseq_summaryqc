@@ -1,0 +1,1 @@
+{"input": ["s3://hubtenants/test/rnaseq/run_test1/fastqc/,s3://hubtenants/test/rnaseq/run_test1/rnastar/,s3://hubtenants/test/rnaseq/run_test1/rnaseqc/"], "output": ["s3://hubtenants/test/rnaseq/run_test1/rnaseq_summaryqc/"], "alternate_inputs": [], "alternate_outputs": [], "program_arguments": "", "sample_id": "rnaseq_summaryqc_test", "dryrun": ""}
