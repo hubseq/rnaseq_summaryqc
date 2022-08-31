@@ -5,7 +5,7 @@
 #
 import os, subprocess, sys
 from datetime import datetime
-sys.path.append('global_utils/src/')
+sys.path.append('/global_utils/src/')
 import module_utils
 
 def runOtherPre( input_dir, output_dir, run_json ):

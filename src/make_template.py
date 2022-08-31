@@ -5,15 +5,22 @@ mi_template_json = {'module_version': '00.00.00', 'program_name': 'rnaseq_summar
 with open(MODULE+'.template.json','w') as fout:
     json.dump(mi_template_json, fout)
 
-io_dryrun_json = {'input': ['s3://hubtenants/test/rnaseq/run_test1/fastqc/,s3://hubtenants/test/rnaseq/run_test1/rnastar/,s3://hubtenants/test/rnaseq/run_test1/rnaseqc/'], 'output': ['s3://hubtenants/test/rnaseq/run_test1/rnaseq_summaryqc/'], 'alternate_inputs': [], 'alternate_outputs': [], 'program_arguments': '', 'sample_id': MODULE+'_test', 'dryrun': ''}
-io_json = {'input': ['s3://hubtenants/test/rnaseq/run_test1/fastqc/,s3://hubtenants/test/rnaseq/run_test1/rnastar/,s3://hubtenants/test/rnaseq/run_test1/rnaseqc/'], 'output': ['s3://hubtenants/test/rnaseq/run_test1/rnaseq_summaryqc/'], 'alternate_inputs': [], 'alternate_outputs': [], 'program_arguments': '', 'sample_id': MODULE+'_test'}
+io_dryrun_json = {'input': 's3://hubtenants/test/rnaseq/run_test1/fastqc/,s3://hubtenants/test/rnaseq/run_test1/rnastar/,s3://hubtenants/test/rnaseq/run_test1/rnaseqc/', 'output': ['s3://hubtenants/test/rnaseq/run_test1/rnaseq_summaryqc/'], 'alternate_inputs': [], 'alternate_outputs': [], 'program_arguments': '', 'sample_id': MODULE+'_test', 'dryrun': ''}
+io_json = {'input': ['s3://hubtenants/test/rnaseq/run_test1/fastqc/','s3://hubtenants/test/rnaseq/run_test1/rnastar/','s3://hubtenants/test/rnaseq/run_test1/rnaseqc/'], 'output': ['s3://hubtenants/test/rnaseq/run_test1/rnaseq_summaryqc/'], 'alternate_inputs': [], 'alternate_outputs': [], 'program_arguments': '-fastqc fastqc -aligner rnastar -alignqc rnaseqc -samples rnastar_test_tiny1,rnastar_test_tiny2,rnastar_test_tiny3,rnastar_test_tiny4,rnastar_test_tiny5,rnastar_test_tiny6', 'sample_id': MODULE+'_test'}
+io_json2 = {'input': ['s3://hubtenants/test/rnaseq/run_test1/fastqc/','s3://hubtenants/test/rnaseq/run_test1/rnastar/','s3://hubtenants/test/rnaseq/run_test1/rnaseqc/'], 'output': ['s3://hubtenants/test/rnaseq/run_test1/rnaseq_summaryqc/'], 'alternate_inputs': [], 'alternate_outputs': [], 'program_arguments': '-fastqc fastqc -aligner rnastar -alignqc rnaseqc -samples rnaseq_mouse_test_tiny1,rnaseq_mouse_test_tiny2,rnaseq_mouse_test_tiny3,rnaseq_mouse_test_tiny4,rnaseq_mouse_test_tiny5,rnaseq_mouse_test_tiny6', 'sample_id': MODULE+'_test'}
 
 with open(MODULE+'.dryrun_test.io.json','w') as fout:
     json.dump(io_dryrun_json, fout)
 with open(MODULE+'.test.io.json','w') as fout:
     json.dump(io_json, fout)
+with open(MODULE+'.test.io2.json','w') as fout:
+    json.dump(io_json2, fout)    
 
 # job info test JSONs                                                                                                        
 job_json = {"container_overrides": {"command": ["--module_name", MODULE, "--run_arguments", "s3://hubseq-data/test/modules/"+MODULE+"/job/"+MODULE+".test.io.json", "--working_dir", "/home/"]}, "jobqueue": "batch_scratch_queue", "jobname": "job_"+MODULE+"_test"}
 with open(MODULE+'.test.job.json','w') as fout:
     json.dump(job_json, fout)
+
+job_json2 = {"container_overrides": {"command": ["--module_name", MODULE, "--run_arguments", "s3://hubseq-data/test/modules/"+MODULE+"/job/"+MODULE+".test.io2.json", "--working_dir", "/home/"]}, "jobqueue": "batch_scratch_queue", "jobname": "job_"+MODULE+"_test"}
+with open(MODULE+'.test.job2.json','w') as fout:
+    json.dump(job_json2, fout)
