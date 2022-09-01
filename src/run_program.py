@@ -129,12 +129,12 @@ def summary_fastqc_fastqc(fastqc_stats):
                                         'solid_small_rna_adapter': []}
                     }
     """
-    fastqc_summary = {'per_base_quality': {'result': 'PASS', 'failed_pos_low': [], 'suggest': [] },
-                      'per_base_content': {'result': 'PASS', 'failed_pos': [], 'failed_pos_low': [], 'failed_pos_high': [], 'failed_pos_low_nt': [], 'failed_pos_high_nt': [], 'suggest': [] },
-                      'per_base_GC_content': {'result': 'PASS', 'suggest': [] },
-                      'per_base_N_content': {'result': 'PASS', 'failed_pos': [], 'suggest': [] },
-                      'deduplicated_perc': {'result': 'PASS', 'suggest': [] },
-                      'adapter_content': {'result': 'PASS', 'failed_pos': [], 'suggest': [] }
+    fastqc_summary = {'per_base_quality': {'result': 'PASS', 'failed_pos_low': [], 'suggest': [], 'value': [], 'threshold': 'Q>25' },
+                      'per_base_content': {'result': 'PASS', 'failed_pos': [], 'failed_pos_low': [], 'failed_pos_high': [], 'failed_pos_low_nt': [], 'failed_pos_high_nt': [], 'suggest': [], 'value': [], 'threshold': '15-35% per base' },
+                      'per_base_GC_content': {'result': 'PASS', 'suggest': [], 'value': [], 'threshold': '30-70%' },
+                      'per_base_N_content': {'result': 'PASS', 'failed_pos': [], 'suggest': [], 'value': [], 'threshold': '<10%' },
+                      'deduplicated_perc': {'result': 'PASS', 'suggest': [], 'value': [], 'threshold': '>20%' },
+                      'adapter_content': {'result': 'PASS', 'failed_pos': [], 'suggest': [], 'value': [], 'threshold': '<10%' }
                       }
     
     ## report any mean base quality < 25
@@ -151,7 +151,8 @@ def summary_fastqc_fastqc(fastqc_stats):
             else:
                 break
         if current_pos > 0:
-            fastqc_summary['per_base_quality']['suggest'].append("Read Sequencing - low sequencing quality detected on the 5'end. Suggest trimming {} bases off the 5' end of every read.".format(str(current_pos)))
+            fastqc_summary['per_base_quality']['suggest'].append("Read Sequencing - low sequencing quality detected on the 5'end. Suggest 5'end read trimming.")
+            fastqc_summary['per_base_quality']['value'].append(current_pos)
 
         pos_len = len(fastqc_summary['per_base_quality']['failed_pos_low'])
         max_pos = max(fastqc_stats['per_base_quality']['pos'])
@@ -162,8 +163,9 @@ def summary_fastqc_fastqc(fastqc_stats):
             else:
                 break
         if current_pos < max_pos:
-            fastqc_summary['per_base_quality']['suggest'].append("Read Sequencing - low sequencing quality detected on the 5'end. Suggest trimming {} bases off the 3' end of every read.".format(str(max_pos-current_pos)))
-
+            fastqc_summary['per_base_quality']['suggest'].append("Read Sequencing - low sequencing quality detected on the 3'end. Suggest 3'end read trimming.")
+            fastqc_summary['per_base_quality']['value'].append(max_pos-current_pos)
+            
     ## report any per-base content nt bias > 35% or < 15%
     for i in range(0,len(fastqc_stats['per_base_content']['pos'])):
         if float(fastqc_stats['per_base_content']['A'][i]) > 35.0:
@@ -182,26 +184,26 @@ def summary_fastqc_fastqc(fastqc_stats):
         elif float(fastqc_stats['per_base_content']['T'][i]) < 15.0:
             fastqc_summary['per_base_content']['failed_pos_low'].append(fastqc_stats['per_base_content']['pos'][i])
             fastqc_summary['per_base_content']['failed_pos_low_nt'].append('T')
-            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])            
-
+            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])
+        
         if float(fastqc_stats['per_base_content']['C'][i]) > 35.0:
             fastqc_summary['per_base_content']['failed_pos_high'].append(fastqc_stats['per_base_content']['pos'][i])
             fastqc_summary['per_base_content']['failed_pos_high_nt'].append('C')
-            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])            
+            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])
         elif float(fastqc_stats['per_base_content']['C'][i]) < 15.0:
             fastqc_summary['per_base_content']['failed_pos_low'].append(fastqc_stats['per_base_content']['pos'][i])
             fastqc_summary['per_base_content']['failed_pos_low_nt'].append('C')
-            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])            
+            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])
 
         if float(fastqc_stats['per_base_content']['G'][i]) > 35.0:
             fastqc_summary['per_base_content']['failed_pos_high'].append(fastqc_stats['per_base_content']['pos'][i])
             fastqc_summary['per_base_content']['failed_pos_high_nt'].append('G')
-            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])            
+            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])
         elif float(fastqc_stats['per_base_content']['G'][i]) < 15.0:
             fastqc_summary['per_base_content']['failed_pos_low'].append(fastqc_stats['per_base_content']['pos'][i])
             fastqc_summary['per_base_content']['failed_pos_low_nt'].append('G')
-            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])            
-
+            fastqc_summary['per_base_content']['failed_pos'].append(fastqc_stats['per_base_content']['pos'][i])
+    
     # remove repeat positions, preserving order
     fastqc_summary['per_base_content']['failed_pos'] = list(set(fastqc_summary['per_base_content']['failed_pos']))
 
@@ -215,8 +217,9 @@ def summary_fastqc_fastqc(fastqc_stats):
             else:
                 break
         if current_pos > 0:
-            fastqc_summary['per_base_content']['suggest'].append("Read sequencing - detected nucleotide bias on the 5'end. Suggest trimming {} bases off the 5' end of every read.".format(str(current_pos)))
-
+            fastqc_summary['per_base_content']['suggest'].append("Read sequencing - detected nucleotide bias on the 5'end. Suggest 5'end read trimming.")
+            fastqc_summary['per_base_content']['value'].append(current_pos)                             
+        
         pos_len = len(fastqc_summary['per_base_content']['failed_pos_low'])
         max_pos = max(fastqc_stats['per_base_content']['pos'])
         current_pos = max_pos
@@ -226,17 +229,20 @@ def summary_fastqc_fastqc(fastqc_stats):
             else:
                 break
         if current_pos < max_pos:
-            fastqc_summary['per_base_content']['suggest'].append("Read sequencing - detected nucleotide bias on the 3'end. Suggest trimming {} bases off the 3' end of every read.".format(str(max_pos-current_pos)))
+            fastqc_summary['per_base_content']['suggest'].append("Read sequencing - detected nucleotide bias on the 3'end. Suggest 3'end read trimming.")
+            fastqc_summary['per_base_content']['value'].append(max_pos-current_pos)
 
     ## report extreme GC% bias
     max_GC_perc_index = fastqc_stats['per_base_GC_content']['count'].index(max(fastqc_stats['per_base_GC_content']['count']))
     max_GC_perc = fastqc_stats['per_base_GC_content']['pos'][max_GC_perc_index]
     if max_GC_perc < 20 or max_GC_perc > 80:
         fastqc_summary['per_base_GC_content']['result'] = 'FAIL'
-        fastqc_summary['per_base_GC_content']['suggest'] = 'Read sequencing - detected extreme GC bias - peak GC% is {}%'.format(str(max_GC_perc))
+        fastqc_summary['per_base_GC_content']['suggest'] = 'Read sequencing - detected extreme GC bias.'
+        fastqc_summary['per_base_GC_content']['value'] = max_GC_perc
     elif max_GC_perc < 30 or max_GC_perc > 70:
         fastqc_summary['per_base_GC_content']['result'] = 'WARNING'
-        fastqc_summary['per_base_GC_content']['suggest'] = 'Read sequencing - detected GC bias - peak GC% is {}%'.format(str(max_GC_perc))
+        fastqc_summary['per_base_GC_content']['suggest'] = 'Read sequencing - detected moderate GC bias.'
+        fastqc_summary['per_base_GC_content']['value'] = max_GC_perc
 
     ## report any positions that have a high number of Ns
     max_pos = max(fastqc_stats['per_base_N_content']['pos'])    
@@ -246,11 +252,15 @@ def summary_fastqc_fastqc(fastqc_stats):
     suggested_mismatch_rate = int(100.0*len(fastqc_summary['per_base_N_content']['failed_pos'])/max_pos)
     if len(fastqc_summary['per_base_N_content']['failed_pos']) > 0 and suggested_mismatch_rate <= 15:
         fastqc_summary['per_base_N_content']['result'] = 'WARNING'
-        fastqc_summary['per_base_N_content']['suggest'] = 'Read sequencing - detected greater than 10% unknown base calls (N) at positions {}. Suggest increasing allowed mismatch rate to {}% during alignment.'.format(len(fastqc_summary['per_base_N_content']['failed_pos']), suggested_mismatch_rate )
+        fastqc_summary['per_base_N_content']['suggest'] = 'Read sequencing - detected greater than 10% unknown base calls (N) at certain base positions. Suggest increasing allowed mismatch rate during alignment.'
+        fastqc_summary['per_base_N_content']['value'].append(fastqc_summary['per_base_N_content']['failed_pos'])
+        fastqc_summary['per_base_N_content']['value'].append(suggested_mismatch_rate)
     elif len(fastqc_summary['per_base_N_content']['failed_pos']) > 0 and suggested_mismatch_rate > 15:
         fastqc_summary['per_base_N_content']['result'] = 'FAIL'
-        fastqc_summary['per_base_N_content']['suggest'] = 'Read sequencing - detected greater than 10% unknown base calls (N) at positions {}. Too many N positions - alignment would require an allowed mismatch rate of greater than 15%.'.format(str(len(fastqc_summary['per_base_N_content']['failed_pos'])), str(suggested_mismatch_rate) )
-
+        fastqc_summary['per_base_N_content']['suggest'] = 'Read sequencing - detected greater than 10% unknown base calls (N) at too many positions. Alignment would require an allowed mismatch rate of greater than 15%.'
+        fastqc_summary['per_base_N_content']['value'].append(fastqc_summary['per_base_N_content']['failed_pos'])
+        fastqc_summary['per_base_N_content']['value'].append(suggested_mismatch_rate)
+    
     ## report any deduplication less than 20%
     if float(fastqc_stats['deduplicated_perc']) < 20.0:
         fastqc_summary['deduplicated_perc']['result'] = 'WARNING'
@@ -275,7 +285,9 @@ def summary_fastqc_fastqc(fastqc_stats):
             else:
                 break
         if current_pos > 0:
-            fastqc_summary['adapter_content']['suggest'].append("Read sequencing - detected sequencing adapter on the 5'end. Suggest trimming {} bases off the 5' end of every read.".format(str(current_pos)))
+            fastqc_summary['adapter_content']['suggest'].append("Read sequencing - detected sequencing adapter on the 5'end. Suggest 5'end read trimming.")
+            fastqc_summary['adapter_content']['value'] = current_pos
+                                                            
 
         pos_len = len(fastqc_summary['adapter_content']['failed_pos'])
         max_pos = max(fastqc_stats['adapter_content']['pos'])
@@ -286,7 +298,8 @@ def summary_fastqc_fastqc(fastqc_stats):
             else:
                 break
         if current_pos < max_pos:
-            fastqc_summary['adapter_content']['suggest'].append("Read sequencing - detected sequencing adapter on the 3'end. Suggest trimming {} bases off the 3' end of every read.".format(str(max_pos-current_pos)))
+            fastqc_summary['adapter_content']['suggest'].append("Read sequencing - detected sequencing adapter on the 3'end. Suggest 3'end read trimming.")
+            fastqc_summary['adapter_content']['value'].append(max_pos-current_pos)
     
     return fastqc_summary
 
@@ -339,11 +352,11 @@ def summary_aligner_rnastar( aligner_stats ):
                      'percent_deletion_rate': 0, 'percent_insertion_rate': 0, 'average_deletion_length': 0, 'average_insertion_length': 0
                     }
     """
-    aligner_summary = {'percent_mapped': {'result': 'PASS', 'suggest': [] },
-                       'percent_uniquely_mapped': {'result': 'PASS', 'suggest': [] },
-                       'percent_mismatch_rate': {'result': 'PASS', 'suggest': [] },
-                       'percent_deletion_rate': {'result': 'PASS', 'suggest': [] },
-                       'percent_insertion_rate': {'result': 'PASS', 'suggest': [] }
+    aligner_summary = {'percent_mapped': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '>50%' },
+                       'percent_uniquely_mapped': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '>50% of mapped' },
+                       'percent_mismatch_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<15%' },
+                       'percent_deletion_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<10%' },
+                       'percent_insertion_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<10%' }
                       }
 
     print('ALIGNER STATS: '+str(aligner_stats))
@@ -351,30 +364,36 @@ def summary_aligner_rnastar( aligner_stats ):
     ## report if % mapped < 50%
     if float(aligner_stats['percent_mapped']) < 50.0:
         aligner_summary['percent_mapped']['result'] = 'WARNING'
-        aligner_summary['percent_mapped']['suggest'] = 'Alignment mapping rate is low [{}%]. Consider read trimming or increasing allowed mismatch rate as suggested through FASTQ QC, or ignoring this sample if possible.'.format( str(round(float(aligner_stats['percent_mapped']),2)))
+        aligner_summary['percent_mapped']['suggest'] = 'Alignment mapping rate is less than 50%. Consider read trimming or increasing allowed mismatch rate as suggested through FASTQ QC, or ignoring this sample if possible.'
+        aligner_summary['percent_mapped']['value'] = round(float(aligner_stats['percent_mapped']),2)
     elif float(aligner_stats['percent_mapped']) < 20.0:
         aligner_summary['percent_mapped']['result'] = 'FAIL'
-        aligner_summary['percent_mapped']['suggest'] = 'Alignment mapping rate is low [{}%]. Consider removing this sample from further analysis.'.format( str(round(float(aligner_stats['percent_mapped']),2)))
+        aligner_summary['percent_mapped']['suggest'] = 'Alignment mapping rate is less than 20%. Consider removing this sample from further analysis.'
+        aligner_summary['percent_mapped']['value'] = round(float(aligner_stats['percent_mapped']),2)        
 
     ## report if % uniquely mapped is < 50% of mapped
     if float(aligner_stats['percent_mapped']) > 0 and float(aligner_stats['percent_uniquely_mapped'])/float(aligner_stats['percent_mapped']) < 0.5:
         aligner_summary['percent_uniquely_mapped']['result'] = 'WARNING'
         aligner_summary['percent_uniquely_mapped']['suggest'] = 'More than 50% of mapped reads are aligning to multiple regions. If this is an issue, consider more stringent mapping parameters.'
+        aligner_summary['percent_uniquely_mapped']['value'] = float(aligner_stats['percent_uniquely_mapped'])/float(aligner_stats['percent_mapped']) if float(aligner_stats['percent_mapped']) > 0 else 0
 
     ## report if mismatch rate > 15%
     if float(aligner_stats['percent_mismatch_rate']) > 15.0:
         aligner_summary['percent_mismatch_rate']['result'] = 'WARNING'
-        aligner_summary['percent_mismatch_rate']['suggest'] = 'Mismatch rate is {}%. Consider more stringent mapping parameters, or re-sequencing if possible.'.format(str(round(float(aligner_stats['percent_mismatch_rate']),2)))
+        aligner_summary['percent_mismatch_rate']['suggest'] = 'Mismatch rate > 15%. Consider more stringent mapping parameters, or re-sequencing if possible.'
+        aligner_summary['percent_mismatch_rate']['value'] = round(float(aligner_stats['percent_mismatch_rate']),2)
 
-    ## report if deletion rate > 5%
-    if float(aligner_stats['percent_deletion_rate']) > 5.0:
+    ## report if deletion rate > 10%
+    if float(aligner_stats['percent_deletion_rate']) > 10.0:
         aligner_summary['percent_deletion_rate']['result'] = 'WARNING'
-        aligner_summary['percent_deletion_rate']['suggest'] = 'Deletion rate is {}%. Consider more stringent mapping parameters, or re-sequencing if possible.'.format(str(round(float(aligner_stats['percent_deletion_rate']),2)))
+        aligner_summary['percent_deletion_rate']['suggest'] = 'Deletion rate > 10%. Consider more stringent mapping parameters, or re-sequencing if possible.'
+        aligner_summary['percent_deletion_rate']['value'] = round(float(aligner_stats['percent_deletion_rate']),2)
 
-    ## report if insertion rate > 5%
-    if float(aligner_stats['percent_insertion_rate']) > 5.0:
+    ## report if insertion rate > 10%
+    if float(aligner_stats['percent_insertion_rate']) > 10.0:
         aligner_summary['percent_insertion_rate']['result'] = 'WARNING'
-        aligner_summary['percent_insertion_rate']['suggest'] = 'Insertion rate is {}%. Consider more stringent mapping parameters, or re-sequencing if possible.'.format(str(round(float(aligner_stats['percent_insertion_rate']),2)))        
+        aligner_summary['percent_insertion_rate']['suggest'] = 'Insertion rate > 10%. Consider more stringent mapping parameters, or re-sequencing if possible.'
+        aligner_summary['percent_insertion_rate']['value'] = round(float(aligner_stats['percent_insertion_rate']),2)
     
     return aligner_summary
 
@@ -471,44 +490,55 @@ def summary_alignqc_rnaseqc( alignqc_stats ):
                      'mean_gene_3p_bias_in_read_location': 0, 'median_gene_3p_bias_in_read_location': 0,
                      'median_transcript_gene_coverage': 0 }
     """
-    alignqc_summary = {'percent_low_mapping_quality': {'result': 'PASS', 'suggest': '' },
-                       'percent_failed_vendor_QC': {'result': 'PASS', 'suggest': '' },
-                       'R1_mismatch_rate': {'result': 'PASS', 'suggest': '' },
-                       'R2_mismatch_rate': {'result': 'PASS', 'suggest': '' },                       
-                       'ambiguous_alignment_rate': {'result': 'PASS', 'suggest': '' },
-                       'rRNA_mapping_rate': {'result': 'PASS', 'suggest': '' },
-                       'average_insertions_deletions_gaps_per_read': {'result': 'PASS', 'suggest': '' }                       
+    alignqc_summary = {'percent_low_mapping_quality': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<20%' },
+                       'percent_failed_vendor_QC': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<20%' },
+                       'R1_mismatch_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<15%' },
+                       'R2_mismatch_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<15%' },
+                       'ambiguous_alignment_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<15%' },
+                       'rRNA_mapping_rate': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<20%' },
+                       'average_insertions_deletions_gaps_per_read': {'result': 'PASS', 'suggest': '', 'value': 'NA', 'threshold': '<10%'}
                        }
 
     ## Report - Low mapping quality greater than 20%
     if float(alignqc_stats['percent_low_mapping_quality']) > 20.0:
         alignc_summary['percent_low_mapping_quality']['result'] = 'WARNING'
-        alignc_summary['percent_low_mapping_quality']['suggest'] = 'Read Alignment - {}% of reads are of low mapping quality. Consider removing these reads by setting an appropriate MAPQ threshold as a parameter during alignment.'.format(str(alignqc_stats['percent_low_mapping_quality']))
-
+        alignc_summary['percent_low_mapping_quality']['suggest'] = 'Read Alignment - More than 20% of reads have low mapping quality. Consider removing these reads by setting an appropriate MAPQ threshold as a parameter during alignment.'
+        alignc_summary['percent_low_mapping_quality']['suggest'] = alignqc_stats['percent_low_mapping_quality']
+    
     ## Report - FAiled vendor QC > 20%
     if float(alignqc_stats['percent_failed_vendor_QC']) > 20.0:
         alignc_summary['percent_failed_vendor_QC']['result'] = 'FAIL'
-        alignc_summary['percent_failed_vendor_QC']['suggest'] = 'Read Alignment - {}% of reads fail vendor QC. Consider re-sequencing this sample.'.format(str(alignqc_stats['percent_failed_vendor_QC']))
+        alignc_summary['percent_failed_vendor_QC']['suggest'] = 'Read Alignment - More than 20% of reads fail vendor QC. Consider re-sequencing this sample.'
+        alignc_summary['percent_failed_vendor_QC']['value'] = alignqc_stats['percent_failed_vendor_QC']
 
-    ## Report - R1 or R2 mismatch rate > 10%
+    ## Report - R1 mismatch rate > 10%
     if float(alignqc_stats['R1_mismatch_rate']) > 10.0:
         alignc_summary['R1_mismatch_rate']['result'] = 'WARNING'
-        alignc_summary['R1_mismatch_rate']['suggest'] = 'Read Alignment - R1 read mismatch rate is {}%. This should not affect gene expression results but may affect variant calling.'
+        alignc_summary['R1_mismatch_rate']['suggest'] = 'Read Alignment - R1 read mismatch rate > 10%. This should not affect gene expression results but may affect variant calling.'
 
-    ## Report - ambiguous_alignment rate > 15%    
-    if float(alignqc_stats['R2_mismatch_rate']) > 15.0:
+    ## Report - R2 mismatch rate > 10%
+    if float(alignqc_stats['R2_mismatch_rate']) > 10.0:
         alignc_summary['R2_mismatch_rate']['result'] = 'WARNING'
-        alignc_summary['R2_mismatch_rate']['suggest'] = 'Read Alignment - Ambiguous alignment rate is {}%. This may cause some error in gene read counts if ambiguous alignments are occuring in gene exon regions.'
-
+        alignc_summary['R2_mismatch_rate']['suggest'] = 'Read Alignment - R2 read mismatch rate > 10%. This should not affect gene expression results but may affect variant calling.'
+        alignc_summary['R2_mismatch_rate']['value'] = alignqc_stats['R2_mismatch_rate']
+        
+    ## Report - ambiguous_alignment rate > 15%    
+    if float(alignqc_stats['ambiguous_alignment_rate']) > 15.0:
+        alignc_summary['ambiguous_alignment_rate']['result'] = 'WARNING'
+        alignc_summary['ambiguous_alignment_rate']['suggest'] = 'Read Alignment - Ambiguous alignment rate > 15%. This may cause some error in gene read counts if ambiguous alignments are occuring in gene exon regions.'
+        alignc_summary['ambiguous_alignment_rate']['value'] = alignqc_stats['ambiguous_alignment rate']
+        
     ## Report - rRNA_mapping_rate > 20%
     if float(alignqc_stats['rRNA_mapping_rate']) > 20.0:
         alignc_summary['rRNA_mapping_rate']['result'] = 'WARNING'
-        alignc_summary['rRNA_mapping_rate']['suggest'] = 'Read Alignment - Ribosomal RNA mapping rate is {}%. Consider ribosomal RNA removal in library prep.'.format(str(alignqc_stats['rRNA_mapping_rate']))
+        alignc_summary['rRNA_mapping_rate']['suggest'] = 'Read Alignment - Ribosomal RNA mapping rate > 20%. Consider ribosomal RNA removal in library prep.'
+        alignc_summary['rRNA_mapping_rate']['value'] = alignqc_stats['rRNA_mapping_rate']
         
     ## Report - average_insertions_deletions_gaps_per_read > 10%
-    if float(alignqc_stats['average_insertions_deletions_gaps_per_read']) > 15.0:
+    if float(alignqc_stats['average_insertions_deletions_gaps_per_read']) > 10.0:
         alignc_summary['average_insertions_deletions_gaps_per_read']['result'] = 'WARNING'
-        alignc_summary['average_insertions_deletions_gaps_per_read']['suggest'] = 'Read Alignment - Detected a large % of gaps, insertions and deletions (total {}%).'.format(str(alignqc_stats['average_insertions_deletions_gaps_per_read']))
+        alignc_summary['average_insertions_deletions_gaps_per_read']['suggest'] = 'Read Alignment - Detected a large % of gaps, insertions and deletions (>10%).'
+        alignc_summary['average_insertions_deletions_gaps_per_read']['value'] = alignqc_stats['average_insertions_deletions_gaps_per_read']
     
     return alignqc_summary
 
@@ -567,6 +597,7 @@ def createSummaryTable_fastqc( fastqc_stats_json, outfile ):
                 fout.write(','.join([sample_id, readpair, total_raw_reads, read_length, avg_seq_error_rate, max_gc])+'\n')
     return
 
+
 def createSummaryTable_align( aligner_stats_json, alignqc_stats_json, outfile ):
     with open(outfile,'w') as fout:
         fout.write(','.join(['Input_Reads','%_Mapped','%_Uniquely_Mapped','%_Mismatch_Rate','%_Deletion_Rate','%_Insertion_Rate','%_rRNA_Reads', '%_Low_Mapping_Quality', '%_Failed_Vendor_QC', 'Genes_Detected'])+'\n')
@@ -584,6 +615,114 @@ def createSummaryTable_align( aligner_stats_json, alignqc_stats_json, outfile ):
 
             fout.write(','.join( [input_reads,p_mapped,p_unique_mapped,p_mm_rate,p_del_rate,p_ins_rate,p_rrna_rate,p_low_mapq,p_fail_qc,p_genes] )+'\n')
     return
+
+
+def addToSummary( summary_json, summary_cells, detail_cells ):
+    """ add a summary JSON to summary reports
+    """
+    for sample, sstats in summary_json.items():
+        for _stat, stat_result in sstats.items():
+            # e.g., percent_mapped, {'result': 'PASS', 'suggest': . 'value':..} ..'sample'
+            detail_cells[sample][_stat] = stat_result
+            if _stat not in summary_cells:
+                summary_cells[_stat] = stat_result
+                summary_cells[_stat]['samples'] = [sample]
+            elif stat_result['result'] == summary_cells[_stat]['result']:
+                summary_cells[_stat]['samples'] += [sample]
+            # highlight WARNING in summary report
+            elif stat_result['result'] == 'WARNING' and summary_cells[_stat]['result'] == 'PASS':
+                summary_cells[_stat] = stat_result
+                summary_cells[_stat]['samples'] = [sample]
+            elif stat_result['result'] == 'FAIL' and (summary_cells[_stat]['result'] in ['PASS', 'WARNING']):
+                # highlight FAIL above all else
+                summary_cells[_stat] = stat_result
+                summary_cells[_stat]['samples'] = [sample]
+    
+    return summary_cells, detail_cells
+            
+
+def removeUnderscore( s ):
+    """ Replace underscores with spaces, and capitalize
+    """
+    s_list = s.split('_')
+    snew = ''
+    for e in s_list:
+        the_upper = e[0].upper() if 'RNA' not in e.upper() else e[0]
+        snew += the_upper + e[1:] + ' '
+    return snew
+
+
+def createSummaryReports( fastqc_summary_json, aligner_summary_json, alignqc_summary_json, summary_html_file, details_html_file ):
+
+    summary_cells = {} # per QC test
+    detail_cells = {}  # per sample
+
+    # get merge of all sample IDs
+    for sample in fastqc_summary_json.keys():
+        detail_cells[sample] = {}
+    for sample in aligner_summary_json.keys():
+        detail_cells[sample] = {}        
+    for sample in alignqc_summary_json.keys():
+        detail_cells[sample] = {}        
+
+    summary_cells, detail_cells = addToSummary( fastqc_summary_json, summary_cells, detail_cells )
+    summary_cells, detail_cells = addToSummary( aligner_summary_json, summary_cells, detail_cells )
+    summary_cells, detail_cells = addToSummary( alignqc_summary_json, summary_cells, detail_cells )    
+
+    summary_table = '<table border="1" style="padding:10px;text-align:left;"><tr><th>QC Stat</th><th>Status</th><th>Pass Criteria</th><th>Samples</th><th>Details</th></tr>'    
+    for _stat, details in summary_cells.items():
+        summary_table += '<tr>'
+        summary_table += '<td>'+removeUnderscore(str(_stat))+'</td>'
+        if details['result'] == 'PASS':
+            result_style = '<td style="background-color:green;">'
+            samples = 'ALL'
+        elif details['result'] == 'WARNING':
+            result_style = '<td style="background-color:yellow;">'
+            samples = str(details['samples'])
+        elif details['result'] == 'FAIL':
+            result_style = '<td style="background-color:red;">'
+            samples = str(details['samples'])
+        else:
+            result_style = '<td>'
+            samples = str(details['samples'])
+        summary_table += result_style+str(details['result'])+'</td>'
+        summary_table += '<td>'+str(details['threshold'])+'</td>'
+        summary_table += '<td>'+samples+'</td>'
+        summary_table += '<td>'+str(details['suggest'])+'</td>'
+        summary_table += '</tr>'
+    summary_table += '</table>'
+    summary_html = '<html><head><h1>RNA-Seq QC Summary</h1></head><body>'+summary_table+'</body></html>'
+
+    details_tables = ''
+    for sample, sstats in detail_cells.items():
+        details_tables += '<h3>'+sample+'</h3><table border="1" style="padding:10px;text-align:left;"><tr><th>QC Stat</th><th>Status</th><th>Pass Criteria</th><th>Value</th><th>Details</th></tr>'
+        for _stat, details in sstats.items():
+            details_tables += '<tr>'
+            details_tables += '<td>'+removeUnderscore(str(_stat))+'</td>'
+            if details['result'] == 'PASS':
+                result_style = '<td style="background-color:green;">'
+            elif details['result'] == 'WARNING':
+                result_style = '<td style="background-color:yellow;">'
+            elif details['result'] == 'FAIL':
+                result_style = '<td style="background-color:red;">'
+            else:
+                result_style = '<td>'            
+            details_tables += result_style+str(details['result'])+'</td>'
+            details_tables += '<td>'+str(details['threshold'])+'</td>'            
+            details_tables += '<td>'+str(details['value'])+'</td>'            
+            details_tables += '<td>'+str(details['suggest'])+'</td>'
+            details_tables += '</tr>'
+        details_tables += '</table>'
+    details_html = '<html><head><h1>RNA-Seq QC details</h1></head><body>'+details_tables+'</body></html>'
+
+    with open( summary_html_file, 'w' ) as fout:
+        fout.write(summary_html)
+
+    with open( details_html_file, 'w' ) as fout:
+        fout.write(details_html)
+    
+    return
+
 
 def run_program( arg_list ):
     """
@@ -648,6 +787,8 @@ def run_program( arg_list ):
         file_utils.writeJSON( alignqc_summary_json, 'alignqc_summary.json' )
         
         createSummaryTable_align( aligner_stats_json, alignqc_stats_json, 'align_summary.csv' )
+
+    createSummaryReports( fastqc_summary_json, aligner_summary_json, alignqc_summary_json, 'rnaseq_qc_report_summary.html', 'rnaseq_qc_report_sample_details.html' )
     
     return
 
